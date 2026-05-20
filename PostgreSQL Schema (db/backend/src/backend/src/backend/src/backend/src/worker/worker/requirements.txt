@@ -1,0 +1,20 @@
+pip install pika
+import pika
+
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters('localhost')
+)
+
+channel = connection.channel()
+
+channel.queue_declare(queue='reconciliation')
+
+channel.basic_publish(
+    exchange='',
+    routing_key='reconciliation',
+    body='New bank transaction'
+)
+
+print("Message sent")
+
+connection.close()
