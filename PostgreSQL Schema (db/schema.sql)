@@ -1,0 +1,93 @@
+-- ReconIQ initial schema
+
+CREATE TABLE organizations (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255),
+    google_id VARCHAR(128),
+    organization_id INTEGER REFERENCES organizations(id),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE user_roles (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    role VARCHAR(32) NOT NULL CHECK (role IN ('admin','accountant','viewer')),
+    organization_id INTEGER REFERENCES organizations(id),
+    UNIQUE (user_id, role, organization_id)
+);
+
+CREATE TABLE bank_accounts (
+    id SERIAL PRIMARY KEY,
+    organization_id INTEGER REFERENCES organizations(id),
+    bank_name VARCHAR(128) NOT NULL,
+    account_number VARCHAR(64) NOT NULL,
+    currency VARCHAR(8) DEFAULT 'USD',
+    branch VARCHAR(128),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE ledger_accounts (
+    id SERIAL PRIMARY KEY,
+    organization_id INTEGER REFERENCES organizations(id),
+    name VARCHAR(64) NOT NULL,
+    type VARCHAR(32),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE bank_transactions (
+    id SERIAL PRIMARY KEY,
+    organization_id INTEGER REFERENCES organizations(id),
+    bank_account_id INTEGER REFERENCES bank_accounts(id),
+    transaction_date DATE NOT NULL,
+    amount NUMERIC(20,2) NOT NULL,
+    reference VARCHAR(256),
+    description TEXT,
+    raw_payload JSONB,
+    source VARCHAR(32),
+    status VARCHAR(24) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE ledger_entries (
+    id SERIAL PRIMARY KEY,
+    organization_id INTEGER REFERENCES organizations(id),
+    ledger_account_id INTEGER REFERENCES ledger_accounts(id),
+    entry_date DATE NOT NULL,
+    amount NUMERIC(20,2) NOT NULL,
+    reference VARCHAR(256),
+    description TEXT,
+    raw_payload JSONB,
+    source VARCHAR(32),
+    status VARCHAR(24) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE matches (
+    id SERIAL PRIMARY KEY,
+    organization_id INTEGER REFERENCES organizations(id),
+    bank_transaction_id INTEGER REFERENCES bank_transactions(id),
+    ledger_entry_id INTEGER REFERENCES ledger_entries(id),
+    match_type VARCHAR(32) NOT NULL,
+    confidence_score NUMERIC(5,2),
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE exceptions (
+    id SERIAL PRIMARY KEY,
+    organization_id INTEGER REFERENCES organizations(id),
+    bank_transaction_id INTEGER REFERENCES bank_transactions(id),
+    ledger_entry_id INTEGER REFERENCES ledger_entries(id),
+    type VARCHAR(32) NOT NULL,
+    status VARCHAR(24) DEFAULT 'unresolved',
+    note TEXT,
+    detected_by VARCHAR(32),
+    created_at TIMESTAMP DEFAULT NOW()
+);
