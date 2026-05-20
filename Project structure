@@ -1,0 +1,26 @@
+reconiq/
+├── README.md
+├── db/
+│   └── schema.sql
+├── backend/
+│   ├── src/
+│   │   ├── index.ts
+│   │   ├── matchingEngine.ts
+│   │   ├── mtumeWebhook.ts
+│   │   ├── exceptionManager.ts
+│   └── package.json
+├── worker/
+│   ├── bridge.py
+│   └── requirements.txt
+├── frontend/
+│   ├── pages/
+│   │   ├── _app.tsx
+│   │   ├── index.tsx
+│   │   ├── dashboard.tsx
+│   │   └── reconciliation.tsx
+│   ├── components/
+│   │   ├── Dashboard.tsx
+│   │   ├── ReconciliationTable.tsx
+│   │   └── ExceptionQueue.tsx
+│   └── package.json
+└── .env.example
